@@ -1,4 +1,4 @@
 # spring-socket-ecommerce
-online-shop
+online-shop.
 Link to angular front-end: 
 https://github.com/AlexanderMinko/angular-socket-ecommerce
