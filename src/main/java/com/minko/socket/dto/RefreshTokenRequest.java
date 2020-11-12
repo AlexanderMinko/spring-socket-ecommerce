@@ -7,11 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegistrationRequestDto {
+public class RefreshTokenRequest {
 
-    private String firstName;
-    private String lastName;
+    private String refreshToken;
     private String email;
-    private String password;
 
 }

@@ -1,13 +1,12 @@
 package com.minko.socket.service;
 
-import com.minko.socket.dto.RegistrationRequestDto;
-import com.minko.socket.dto.RegistrationResponseDto;
+import com.minko.socket.entity.Account;
 
 public interface AccountService {
 
     boolean existsByEmail(String email);
 
-    RegistrationResponseDto createCustomAccount(RegistrationRequestDto registrationRequestDto);
+    Account getByEmail(String email);
 
-    void verifyAccount(String token);
+    Account getById(Long id);
 }

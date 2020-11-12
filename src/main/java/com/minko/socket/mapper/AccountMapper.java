@@ -1,46 +1,33 @@
 package com.minko.socket.mapper;
 
-import com.minko.socket.dto.RegistrationRequestDto;
-import com.minko.socket.dto.RegistrationResponseDto;
+import com.minko.socket.dto.LoginResponse;
+import com.minko.socket.dto.RegistrationRequest;
+import com.minko.socket.dto.RegistrationResponse;
 import com.minko.socket.entity.Account;
 import com.minko.socket.entity.Role;
-import com.minko.socket.entity.RoleType;
-import com.minko.socket.repository.RoleRepository;
-import com.minko.socket.service.impl.SocketException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public abstract class AccountMapper {
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private RoleRepository roleRepository;
+public interface AccountMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdDate", expression = "java(java.time.Instant.now())")
-    @Mapping(target = "password", expression = "java(getPasswordEncoder().encode(registrationRequestDto.getPassword()))")
+    @Mapping(target = "password", source = "bCryptedPassword")
     @Mapping(target = "enabled", expression = "java(false)")
-    @Mapping(target = "roles", expression = "java(getRoles())")
-    public abstract Account mapDtoToAccount(RegistrationRequestDto registrationRequestDto);
+    @Mapping(target = "roles", source = "roles")
+    Account mapDtoToAccount(
+            RegistrationRequest registrationRequest, List<Role> roles, String bCryptedPassword);
 
+    @Mapping(target = "enabled", source = "account.enabled")
+    @Mapping(target = "authToken", source = "authToken")
+    @Mapping(target = "expiresAt", source = "expiresAt")
+    @Mapping(target = "refreshToken", source = "refreshToken")
+    LoginResponse mapToLoginResponse(Account account, String authToken, String refreshToken, Instant expiresAt);
 
-    public abstract RegistrationResponseDto mapFromAccountToDto(Account account);
+    RegistrationResponse mapFromAccountToDto(Account account);
 
-    PasswordEncoder getPasswordEncoder() {
-        return passwordEncoder;
-    }
-
-    List<Role> getRoles() {
-        Role roleUser = roleRepository.findByRoleType(RoleType.ROLE_USER)
-                .orElseThrow(() -> new SocketException("Role not found with role type - " + RoleType.ROLE_USER));
-        return Arrays.asList(roleUser);
-    }
 }

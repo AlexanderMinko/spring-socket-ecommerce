@@ -1,4 +1,4 @@
-package com.minko.socket.service.impl;
+package com.minko.socket.exception;
 
 public class SocketException extends RuntimeException {
 
