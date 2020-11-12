@@ -1,9 +1,6 @@
 package com.minko.socket.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -38,7 +35,9 @@ public class Account {
 
     private Instant createdDate;
 
-    private boolean enabled;
+    private Boolean enabled;
+
+    private String photoUrl;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "account_role",
