@@ -16,11 +16,11 @@ import java.util.UUID;
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshToken refreshToken;
 
     @Override
     @Transactional
     public RefreshToken generateRefreshToken() {
-        RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken.setCreatedDate(Instant.now());
         return refreshTokenRepository.save(refreshToken);
