@@ -1,11 +1,8 @@
 package com.minko.socket.controller;
 
-import com.minko.socket.dto.ReviewRequestDto;
-import com.minko.socket.dto.ReviewResponseDto;
 import com.minko.socket.entity.Category;
 import com.minko.socket.entity.Product;
 import com.minko.socket.service.ProductService;
-import com.minko.socket.service.ReviewService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,7 +17,6 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
-    private final ReviewService reviewService;
 
     @GetMapping
     public ResponseEntity<Page<Product>> getProducts(@RequestParam Integer page, @RequestParam Integer size) {
@@ -38,25 +34,15 @@ public class ProductController {
         return new ResponseEntity<>(productService.getProductsByCategoryId(id, page, size), HttpStatus.OK);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Page<Product>> getProductsByNameContaining(
+            @RequestParam String name, @RequestParam Integer page, @RequestParam Integer size) {
+        return new ResponseEntity<>(productService.getProductsByNameContaining(name, page, size), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         return new ResponseEntity<>(productService.getProductById(id), HttpStatus.OK);
-    }
-
-    @GetMapping("/reviews/{id}")
-    public ResponseEntity<List<ReviewResponseDto>> getReviews(@PathVariable Long id) {
-        return new ResponseEntity<>(reviewService.getAllReviewByProductId(id), HttpStatus.OK);
-    }
-
-    @PostMapping("/reviews")
-    public ResponseEntity<String> postReview(@RequestBody ReviewRequestDto reviewRequestDto) {
-        reviewService.createReview(reviewRequestDto);
-        return new ResponseEntity<>("Review successfully created!", HttpStatus.CREATED);
-    }
-
-    @GetMapping("/reviews")
-    public ResponseEntity<?> getReviewByAccountEmail(@RequestParam String email) {
-        return new ResponseEntity<>(reviewService.getAllReviewByEmail(email), HttpStatus.OK);
     }
 
 }

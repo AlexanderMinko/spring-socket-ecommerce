@@ -61,9 +61,9 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NetHttpTransport netHttpTransport;
 
     public LoginResponse google(SocialRequest socialRequest) {
-        NetHttpTransport netHttpTransport = new NetHttpTransport();
         JacksonFactory jacksonFactory = JacksonFactory.getDefaultInstance();
         GoogleIdTokenVerifier.Builder verifier =
                 new GoogleIdTokenVerifier.Builder(netHttpTransport, jacksonFactory)
@@ -126,7 +126,7 @@ public class AuthServiceImpl implements AuthService {
         mailService.sendMail(new NotificationEmail("Please activate your account",
                 account.getEmail(), "Thank you for registration to \"Socket\"! " +
                 "Click on the link to activate your account: " +
-                "http://localhost:8080/api/auth/accountVerification/" + verificationToken.getToken()));
+                "http://localhost:4200/verification/" + verificationToken.getToken()));
         return accountMapper.mapFromAccountToDto(account);
     }
 

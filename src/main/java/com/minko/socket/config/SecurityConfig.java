@@ -59,17 +59,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/auth/**")
                 .permitAll()
-                .antMatchers(
-                        "/api/products/**"
-//                        "/api/products",
-//                        "/api/products/{id}",
-//                        "/api/products/by-category",
-//                        "/api/products/categories"
-                        )
+                .antMatchers("/api/products/**")
                 .permitAll()
-                .anyRequest().authenticated();
-//                .and()
-//                .exceptionHandling().authenticationEntryPoint(jwtEntryPoint);
+                .antMatchers("/api/reviews/**")
+                .permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .exceptionHandling().authenticationEntryPoint(jwtEntryPoint);
         http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

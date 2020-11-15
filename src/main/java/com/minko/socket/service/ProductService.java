@@ -16,6 +16,8 @@ public interface ProductService {
 
     Page<Product> getProductsByCategoryId(Long id, Integer page, Integer size);
 
+    Page<Product> getProductsByNameContaining(String name, Integer page, Integer size);
+
     Product getProductById(Long id);
 
 }

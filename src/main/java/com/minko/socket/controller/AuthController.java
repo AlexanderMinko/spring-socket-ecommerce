@@ -5,13 +5,9 @@ import com.minko.socket.service.RefreshTokenService;
 import com.minko.socket.service.impl.AuthServiceImpl;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -55,7 +51,7 @@ public class AuthController {
                 "Refresh token deleted successfully - " + refreshTokenRequest.getRefreshToken(), HttpStatus.OK);
     }
 
-    @GetMapping("/accountVerification/{token}")
+    @GetMapping("/verificate/{token}")
     public ResponseEntity<String> accountVerification(@PathVariable String token) {
         authService.verifyAccount(token);
         return new ResponseEntity<>( "Account activated successfully" , HttpStatus.OK);

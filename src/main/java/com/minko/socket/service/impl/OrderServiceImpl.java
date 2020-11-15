@@ -34,10 +34,10 @@ public class OrderServiceImpl implements OrderService {
     public Long makeOrder(OrderRequestDto orderRequestDto) {
         Order order = orderMapper.mapFromDtoToOrder(orderRequestDto);
         Long orderId = orderRepository.save(order).getId();
-        log.info(orderRequestDto.getOrderItems().toString());
         List<OrderItem> orderItems = orderRequestDto.getOrderItems()
-                .stream().map(orderMapper::mapFromDto).collect(Collectors.toList());
-        orderItems.forEach(el -> el.setOrder(order));
+                .stream().map(orderMapper::mapFromDto)
+                .peek(el -> el.setOrder(order))
+                .collect(Collectors.toList());
         orderItemRepository.saveAll(orderItems);
         return orderId;
     }
