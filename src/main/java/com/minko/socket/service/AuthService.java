@@ -14,4 +14,6 @@ public interface AuthService {
 
     LoginResponse loginAccount(LoginRequest loginRequest);
 
+    LoginResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
+
 }

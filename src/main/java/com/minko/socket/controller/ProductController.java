@@ -45,4 +45,22 @@ public class ProductController {
         return new ResponseEntity<>(productService.getProductById(id), HttpStatus.OK);
     }
 
+    @GetMapping("/by-price-asc")
+    public ResponseEntity<Page<Product>> getProductsSorterByPriceAsc(
+            @RequestParam Integer page, @RequestParam Integer size) {
+        return new ResponseEntity<>(productService.getProductsSortedByPriceAsc(page, size), HttpStatus.OK);
+    }
+
+    @GetMapping("/by-price-desc")
+    public ResponseEntity<Page<Product>> getProductsSorterByPriceDesc(
+            @RequestParam Integer page, @RequestParam Integer size) {
+        return new ResponseEntity<>(productService.getProductsSortedByPriceDesc(page, size), HttpStatus.OK);
+    }
+
+    @GetMapping("/by-name")
+    public ResponseEntity<Page<Product>> getProductsByNameSorted(
+            @RequestParam Integer page, @RequestParam Integer size) {
+        return new ResponseEntity<>(productService.getProductsByNameSorted(page, size), HttpStatus.OK);
+    }
+
 }

@@ -61,23 +61,23 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final NetHttpTransport netHttpTransport;
+    private final GoogleIdTokenVerifier.Builder builder;
 
     public LoginResponse google(SocialRequest socialRequest) {
-        JacksonFactory jacksonFactory = JacksonFactory.getDefaultInstance();
-        GoogleIdTokenVerifier.Builder verifier =
-                new GoogleIdTokenVerifier.Builder(netHttpTransport, jacksonFactory)
-                        .setAudience(Collections.singletonList(googleId));
+        builder.setAudience(Collections.singletonList(googleId));
         GoogleIdToken googleIdToken = null;
         try {
-            googleIdToken = GoogleIdToken.parse(verifier.getJsonFactory(), socialRequest.getToken());
+            googleIdToken = GoogleIdToken.parse(builder.getJsonFactory(), socialRequest.getToken());
             GoogleIdToken.Payload loadedAccount = googleIdToken.getPayload();
             String email = loadedAccount.getEmail();
             Account account = findOrCreateSocialAccount(email, socialRequest);
-            return loginAccount(new LoginRequest(account.getEmail(), secretPassword));
+            LoginRequest loginRequest = new LoginRequest(account.getEmail(), secretPassword);
+            log.info("In google - loginRequest: {} successfully created", loginRequest);
+            return loginAccount(loginRequest);
         } catch (IOException e) {
-            throw new SocketException("exception while parsing google token");
+            log.error("In google - Exception while parsing google token. Message: {} ", e.getMessage());
         }
+        return null;
     }
 
     public LoginResponse facebook(SocialRequest socialRequest) {
@@ -85,39 +85,46 @@ public class AuthServiceImpl implements AuthService {
         Account loadedAccount = facebook.fetchObject("me", Account.class, "email");
         String email = loadedAccount.getEmail();
         Account account = findOrCreateSocialAccount(email, socialRequest);
-        return loginAccount(new LoginRequest(account.getEmail(), secretPassword));
+        LoginRequest loginRequest = new LoginRequest(account.getEmail(), secretPassword);
+        log.info("In facebook - loginRequest: {} successfully created", loginRequest);
+        return loginAccount(loginRequest);
     }
 
     @Transactional(readOnly = true)
-    private Account findOrCreateSocialAccount(String email, SocialRequest socialRequest) {
+    public Account findOrCreateSocialAccount(String email, SocialRequest socialRequest) {
         Account account = null;
         if(accountService.existsByEmail(email)) {
             account = accountService.getByEmail(email);
+            log.info("In findOrCreateSocialAccount - account: {} successfully logined", account);
         } else {
-            account = createSocialAccount(new RegistrationRequest(
+            RegistrationRequest registrationRequest = new RegistrationRequest(
                     socialRequest.getFirstName(), socialRequest.getLastName(),
-                    email, secretPassword, socialRequest.getPhotoUrl()));
+                    email, secretPassword, socialRequest.getPhotoUrl());
+            account = createSocialAccount(registrationRequest);
+            log.info("In findOrCreateSocialAccount - registrationRequest: {} successfully created",
+                    registrationRequest);
         }
         return account;
     }
 
     @Transactional
-    private Account createSocialAccount(RegistrationRequest registrationRequest) {
+    public Account createSocialAccount(RegistrationRequest registrationRequest) {
         Role roleUser = roleRepository.findByRoleType(RoleType.ROLE_USER)
                 .orElseThrow(() -> new SocketException("Role not found with role type - " + RoleType.ROLE_USER));
-        List<Role> roles = Arrays.asList(roleUser);
+        List<Role> roles = Collections.singletonList(roleUser);
         String bCryptedPassword = passwordEncoder.encode(registrationRequest.getPassword());
         Account account = accountMapper.mapDtoToAccount(registrationRequest, roles, bCryptedPassword);
         account.setEnabled(true);
-        log.info("IN register - account: {} successfully registered", account);
-        return accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
+        log.info("IN createSocialAccount - account: {} successfully created", savedAccount);
+        return savedAccount;
     }
 
     @Transactional
     public RegistrationResponse createCustomAccount(RegistrationRequest registrationRequest) {
         Role roleUser = roleRepository.findByRoleType(RoleType.ROLE_USER)
                 .orElseThrow(() -> new SocketException("Role not found with role type - " + RoleType.ROLE_USER));
-        List<Role> roles = Arrays.asList(roleUser);
+        List<Role> roles = Collections.singletonList(roleUser);
         String bCryptedPassword = passwordEncoder.encode(registrationRequest.getPassword());
         registrationRequest.setPhotoUrl("assets/images/avatar/BasePhoto.jpg");
         Account account = accountMapper.mapDtoToAccount(registrationRequest, roles, bCryptedPassword);
@@ -127,7 +134,9 @@ public class AuthServiceImpl implements AuthService {
                 account.getEmail(), "Thank you for registration to \"Socket\"! " +
                 "Click on the link to activate your account: " +
                 "http://localhost:4200/verification/" + verificationToken.getToken()));
-        return accountMapper.mapFromAccountToDto(account);
+        RegistrationResponse registrationResponse = accountMapper.mapFromAccountToDto(account);
+        log.info("In createCustomAccount - registrationResponse: {} successfully created", registrationResponse);
+        return registrationResponse;
     }
 
     @Transactional
@@ -137,49 +146,61 @@ public class AuthServiceImpl implements AuthService {
         String email = verificationToken.getAccount().getEmail();
         Account account = accountService.getByEmail(email);
         account.setEnabled(true);
-        accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
         verificationTokenRepository.delete(verificationToken);
+        log.info("In verifyAccount - account: {} is enabled, verificationToken: {} successfully deleted",
+                savedAccount, verificationToken);
     }
 
     @Transactional
-    private VerificationToken generateVerificationToken(Account account) {
+    public VerificationToken generateVerificationToken(Account account) {
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
         verificationToken.setAccount(account);
         verificationToken.setExpirationDate(Instant.now().plusMillis(verifyTokenExp));
-        return verificationTokenRepository.save(verificationToken);
+        VerificationToken savedVerificationToken = verificationTokenRepository.save(verificationToken);
+        log.info("In generateVerificationToken - verificationToken: {} successfully created", verificationToken);
+        return savedVerificationToken;
     }
 
     public LoginResponse loginAccount(LoginRequest loginRequest) {
         String authToken = login(loginRequest);
         String refreshToken = refreshTokenService.generateRefreshToken().getToken();
         Instant expiresAt = Instant.now().plusMillis(jwtProvider.getExpiration());
-        return accountMapper.mapToLoginResponse(getCurrentAccount(), authToken, refreshToken, expiresAt);
+        LoginResponse loginResponse = accountMapper
+                .mapToLoginResponse(getCurrentAccount(), authToken, refreshToken, expiresAt);
+        log.info("In loginAccount - loginResponse: {} successfully created", loginResponse);
+        return loginResponse;
     }
 
     @Transactional(readOnly = true)
-    private Account getCurrentAccount() {
+    public Account getCurrentAccount() {
         AccountPrincipal principal = (AccountPrincipal) SecurityContextHolder
                 .getContext().getAuthentication().getPrincipal();
-        return accountService.getByEmail(principal.getUsername());
+        Account account = accountService.getByEmail(principal.getUsername());
+        log.info("In getCurrentAccount account: {} successfully returned", account);
+        return account;
     }
 
-    private String login(LoginRequest loginRequest) {
+    public String login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtProvider.generateToken(authentication);
-        log.info("Token created at: {} ", Instant.now());
+        log.info("In login - token: {} successfully created at: {}", token, Instant.now());
         return token;
     }
 
+    @Override
     public LoginResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
         Account account = accountService.getByEmail(refreshTokenRequest.getEmail());
         refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
         String authToken = jwtProvider.generateTokenByEmail(refreshTokenRequest.getEmail());
         Instant expiresAt = Instant.now().plusMillis(jwtProvider.getExpiration());
-        return accountMapper.mapToLoginResponse(
+        LoginResponse loginResponse = accountMapper.mapToLoginResponse(
                 account, authToken, refreshTokenRequest.getRefreshToken(), expiresAt);
+        log.info("In refreshToken - loginResponse: {} successfully created", loginResponse);
+        return loginResponse;
     }
 }

@@ -20,4 +20,10 @@ public interface ProductService {
 
     Product getProductById(Long id);
 
+    Page<Product> getProductsSortedByPriceAsc(Integer page, Integer size);
+
+    Page<Product> getProductsSortedByPriceDesc(Integer page, Integer size);
+
+    Page<Product> getProductsByNameSorted(Integer page, Integer size);
+
 }
