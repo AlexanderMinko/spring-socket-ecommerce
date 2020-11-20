@@ -23,4 +23,6 @@ public interface ReviewService {
 
     List<SubReviewResponseDto> getAllSubReviewByReviewId(Long id);
 
+    Integer getCountOfSubReviewByReviewId(Long id);
+
 }

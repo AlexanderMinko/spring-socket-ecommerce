@@ -1,6 +1,7 @@
 package com.minko.socket.entity;
 
 import lombok.*;
+import org.aspectj.weaver.ast.Or;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -31,6 +32,7 @@ public class Account {
     @Email
     @NotEmpty(message = "email is required")
     private String email;
+
     private String password;
 
     private Instant createdDate;

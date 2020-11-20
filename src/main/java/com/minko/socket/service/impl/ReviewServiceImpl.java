@@ -39,8 +39,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional(readOnly = true)
     public Review getReviewById(Long id) {
-        return reviewRepository.findById(id)
+        Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new SocketException("Review with not found with id - " + id));
+        log.info("In getReviewById - review: {} found", review);
+        return review;
     }
 
     @Override
@@ -49,19 +51,23 @@ public class ReviewServiceImpl implements ReviewService {
         Account account = accountService.getByEmail(reviewRequestDto.getEmail());
         Product product = productService.getProductById(reviewRequestDto.getProductId());
         Review review = reviewMapper.mapFromDto(reviewRequestDto, account, product);
-        reviewRepository.save(review);
+        Review savedReview = reviewRepository.save(review);
+        log.info("In createReview - review: {} successfully created", savedReview);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ReviewResponseDto> getAllReviewByProductId(Long id) {
-        return reviewRepository.findByProductId(id)
+        List<ReviewResponseDto> reviewResponseDtos = reviewRepository.findByProductId(id)
                 .stream().map(reviewMapper::mapToDto)
                 .peek(el -> {
+                    //TODO Single Responsibility violation, fix later!
                     el.setSubReviewResponseDtos(this.getAllSubReviewByReviewId(el.getId()));
                     el.setCountOfSubReview(this.getCountOfSubReviewByReviewId(el.getId()));
                 })
                 .collect(Collectors.toList());
+        log.info("In getAllReviewByProductId - {} reviewResponseDtos found", reviewResponseDtos.size());
+        return reviewResponseDtos;
     }
 
     @Override
@@ -77,6 +83,8 @@ public class ReviewServiceImpl implements ReviewService {
         Map<String, Object> result = new HashMap<>();
         result.put("content", reviewResponseDtos);
         result.put("totalElements", foundedReviews.size());
+        log.info("In getAllReviewByEmail - {} reviewResponseDtos found, totalElemets: {}",
+                reviewResponseDtos.size(), foundedReviews.size());
         return result;
     }
 
@@ -86,18 +94,24 @@ public class ReviewServiceImpl implements ReviewService {
         Account account = accountService.getByEmail(subReviewRequestDto.getEmail());
         Review review = this.getReviewById(subReviewRequestDto.getReviewId());
         SubReview subReview = reviewMapper.mapFromDtoToSubReview(subReviewRequestDto, account, review);
-        subReviewRepository.save(subReview);
+        SubReview savedSubReview = subReviewRepository.save(subReview);
+        log.info("In createSubReview - savedSubReview: {} successfully created", savedSubReview);
     }
 
     @Override
     public List<SubReviewResponseDto> getAllSubReviewByReviewId(Long id) {
-        return subReviewRepository.findByReviewId(id)
+        List<SubReviewResponseDto> subReviewResponseDtos =
+                subReviewRepository.findByReviewId(id)
                 .stream().map(reviewMapper::mapFromSubReviewToDto)
                 .collect(Collectors.toList());
+        log.info("In getAllSubReviewByReviewId - {} subReviewResponseDtos found", subReviewResponseDtos.size());
+        return subReviewResponseDtos;
     }
 
     public Integer getCountOfSubReviewByReviewId(Long id) {
-        return subReviewRepository.countByReviewId(id);
+        Integer count = subReviewRepository.countByReviewId(id);
+        log.info("In getCountOfSubReviewByReviewId - count: {} returned", count);
+        return count;
     }
 
 }

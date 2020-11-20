@@ -15,7 +15,6 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Component
 public class RefreshToken {
 
     @Id

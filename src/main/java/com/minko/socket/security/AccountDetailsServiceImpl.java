@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
-@Slf4j
 public class AccountDetailsServiceImpl implements UserDetailsService {
 
     private final AccountRepository accountRepository;
@@ -21,7 +20,6 @@ public class AccountDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        log.info("lol");
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("email not found - " + email));
         return AccountPrincipalFactory.create(account);
