@@ -19,18 +19,19 @@ public interface AccountMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdDate", expression = "java(java.time.Instant.now())")
-    @Mapping(target = "password", source = "bCryptedPassword")
+    @Mapping(target = "password", source = "bcryptedPassword")
     @Mapping(target = "enabled", expression = "java(false)")
     @Mapping(target = "roles", source = "roles")
-    Account mapDtoToAccount(
-            RegistrationRequest registrationRequest, List<Role> roles, String bCryptedPassword);
+    Account mapDtoToAccount(RegistrationRequest registrationRequest,
+        List<Role> roles, String bcryptedPassword);
 
     @Mapping(target = "enabled", source = "account.enabled")
     @Mapping(target = "authToken", source = "authToken")
     @Mapping(target = "expiresAt", source = "expiresAt")
     @Mapping(target = "refreshToken", source = "refreshToken")
     @Mapping(target = "roles", expression = "java(getSimpleListOfRoles(account))")
-    LoginResponse mapToLoginResponse(Account account, String authToken, String refreshToken, Instant expiresAt);
+    LoginResponse mapToLoginResponse(Account account, String authToken,
+        String refreshToken, Instant expiresAt);
 
     RegistrationResponse mapFromAccountToDto(Account account);
 
@@ -39,7 +40,8 @@ public interface AccountMapper {
     AccountAdminResponse mapToAccountWithOutPassword(Account account);
 
     default List<RoleType> getSimpleListOfRoles(Account account) {
-        return account.getRoles().stream().map(Role::getRoleType).collect(Collectors.toList());
+        return account.getRoles().stream().map(Role::getRoleType)
+            .collect(Collectors.toList());
     }
 
 }

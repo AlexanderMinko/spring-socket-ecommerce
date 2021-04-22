@@ -47,12 +47,13 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void createReview(ReviewRequestDto reviewRequestDto) {
+    public Review createReview(ReviewRequestDto reviewRequestDto) {
         Account account = accountService.getByEmail(reviewRequestDto.getEmail());
         Product product = productService.getProductById(reviewRequestDto.getProductId());
         Review review = reviewMapper.mapFromDto(reviewRequestDto, account, product);
         Review savedReview = reviewRepository.save(review);
         log.info("In createReview - review: {} successfully created", savedReview);
+        return savedReview;
     }
 
     @Override
@@ -61,7 +62,6 @@ public class ReviewServiceImpl implements ReviewService {
         List<ReviewResponseDto> reviewResponseDtos = reviewRepository.findByProductId(id)
                 .stream().map(reviewMapper::mapToDto)
                 .peek(el -> {
-                    //TODO Single Responsibility violation, fix later!
                     el.setSubReviewResponseDtos(this.getAllSubReviewByReviewId(el.getId()));
                     el.setCountOfSubReview(this.getCountOfSubReviewByReviewId(el.getId()));
                 })
@@ -90,16 +90,17 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void createSubReview(SubReviewRequestDto subReviewRequestDto) {
+    public SubReview createSubReview(SubReviewRequestDto subReviewRequestDto) {
         Account account = accountService.getByEmail(subReviewRequestDto.getEmail());
         Review review = this.getReviewById(subReviewRequestDto.getReviewId());
         SubReview subReview = reviewMapper.mapFromDtoToSubReview(subReviewRequestDto, account, review);
         SubReview savedSubReview = subReviewRepository.save(subReview);
         log.info("In createSubReview - savedSubReview: {} successfully created", savedSubReview);
+        return savedSubReview;
     }
 
-    @Override
-    public List<SubReviewResponseDto> getAllSubReviewByReviewId(Long id) {
+    @Transactional(readOnly = true)
+    private List<SubReviewResponseDto> getAllSubReviewByReviewId(Long id) {
         List<SubReviewResponseDto> subReviewResponseDtos =
                 subReviewRepository.findByReviewId(id)
                 .stream().map(reviewMapper::mapFromSubReviewToDto)
@@ -108,7 +109,7 @@ public class ReviewServiceImpl implements ReviewService {
         return subReviewResponseDtos;
     }
 
-    public Integer getCountOfSubReviewByReviewId(Long id) {
+    private Integer getCountOfSubReviewByReviewId(Long id) {
         Integer count = subReviewRepository.countByReviewId(id);
         log.info("In getCountOfSubReviewByReviewId - count: {} returned", count);
         return count;
