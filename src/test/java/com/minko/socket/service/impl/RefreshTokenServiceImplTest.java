@@ -4,6 +4,7 @@ import com.minko.socket.entity.RefreshToken;
 import com.minko.socket.exception.SocketException;
 import com.minko.socket.repository.RefreshTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -40,14 +41,16 @@ class RefreshTokenServiceImplTest {
     }
 
     @Test
-    void generateRefreshToken() {
+    @DisplayName("Should return generated refresh token")
+    void generateRefreshTokenTest() {
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(refreshToken);
         RefreshToken refreshTokenAct = refreshTokenService.generateRefreshToken();
         assertThat(refreshTokenAct).isEqualTo(refreshToken);
     }
 
     @Test
-    void validateRefreshToken() {
+    @DisplayName("Should find token in db and do nothing, if token doesn't exit should throw exception")
+    void validateRefreshTokenTest() {
         when(refreshTokenRepository.findByToken(refreshToken.getToken())).thenReturn(Optional.of(refreshToken));
         refreshTokenService.validateRefreshToken(refreshToken.getToken());
         verify(refreshTokenRepository, times(1)).findByToken(tokenArgumentCaptor.capture());
@@ -57,7 +60,8 @@ class RefreshTokenServiceImplTest {
     }
 
     @Test
-    void deleteRefreshToken() {
+    @DisplayName("Should delete refresh token from db")
+    void deleteRefreshTokenTest() {
         refreshTokenService.deleteRefreshToken(refreshToken.getToken());
         verify(refreshTokenRepository, times(1)).deleteByToken(tokenArgumentCaptor.capture());
         assertThat(refreshToken.getToken()).isEqualTo(tokenArgumentCaptor.getValue());

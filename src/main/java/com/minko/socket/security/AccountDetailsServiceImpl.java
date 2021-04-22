@@ -19,9 +19,10 @@ public class AccountDetailsServiceImpl implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Account account = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("email not found - " + email));
+    public UserDetails loadUserByUsername(String email)
+        throws UsernameNotFoundException {
+        Account account = accountRepository.findByEmail(email).orElseThrow(
+            () -> new UsernameNotFoundException("email not found - " + email));
         return AccountPrincipalFactory.create(account);
     }
 }

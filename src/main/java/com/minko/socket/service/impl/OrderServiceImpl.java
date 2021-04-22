@@ -12,6 +12,7 @@ import com.minko.socket.repository.OrderRepository;
 import com.minko.socket.service.AccountService;
 import com.minko.socket.service.OrderService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class OrderServiceImpl implements OrderService {
 
@@ -31,28 +32,36 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Long makeOrder(OrderRequestDto orderRequestDto) {
+    public Order makeOrder(OrderRequestDto orderRequestDto) {
         Order order = orderMapper.mapFromDtoToOrder(orderRequestDto);
-        Long orderId = orderRepository.save(order).getId();
+        Order savedOrder = orderRepository.save(order);
         List<OrderItem> orderItems = orderRequestDto.getOrderItems()
                 .stream().map(orderMapper::mapFromDto)
                 .peek(el -> el.setOrder(order))
                 .collect(Collectors.toList());
-        orderItemRepository.saveAll(orderItems);
-        return orderId;
+        List<OrderItem> savedOrderItems = orderItemRepository.saveAll(orderItems);
+        log.info("In makeOrder - order: {} successfully create with: {} order items",
+                savedOrder, savedOrderItems.size());
+        return savedOrder;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponseDto> getOrdersByEmail(String email) {
         Account account = accountService.getByEmail(email);
-        return orderRepository.findByAccountId(account.getId())
+        List<OrderResponseDto> orderResponseDtos = orderRepository.findByAccountId(account.getId())
                 .stream().map(orderMapper::mapToDto).collect(Collectors.toList());
+        log.info("In getOrdersByEmail - {} orderResponseDtos found", orderResponseDtos.size());
+        return orderResponseDtos;
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public List<OrderItemResponseDto> getOrderItemsByOrderId(Long id) {
-        return orderItemRepository.findByOrderId(id)
+        List<OrderItemResponseDto> orderItemResponseDtos = orderItemRepository.findByOrderId(id)
                 .stream().map(orderMapper::mapToDtoFromOrderItem)
                 .collect(Collectors.toList());
+        log.info("In getOrderItemsByOrderId - {} orderItemResponseDtos found", orderItemResponseDtos.size());
+        return orderItemResponseDtos;
     }
 }

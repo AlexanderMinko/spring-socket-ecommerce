@@ -27,35 +27,50 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
-        return accountRepository.existsByEmail(email);
+        boolean isExist = accountRepository.existsByEmail(email);
+        log.info("In existsByEmail - is account exist: {} by email: {}",
+            isExist, email);
+        return isExist;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Account getByEmail(String email) {
-        return accountRepository.findByEmail(email)
-                .orElseThrow(() -> new SocketException("Account not found with email - " + email));
+        Account account = accountRepository.findByEmail(email).orElseThrow(
+            () -> new SocketException(
+                "Account not found with email - " + email));
+        log.info("In getByEmail - account: {} found", account);
+        return account;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Account getById(Long id) {
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new SocketException("Account not found with id - " +  id));
+        Account account = accountRepository.findById(id).orElseThrow(
+            () -> new SocketException("Account not found with id - " + id));
+        log.info("In getById - account: {} found", account);
+        return account;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AccountAdminResponse> getAccounts() {
-        return accountRepository.findAll()
-                .stream().map(accountMapper::mapToAccountWithOutPassword)
-                .collect(Collectors.toList());
+        List<AccountAdminResponse> accountAdminResponses = accountRepository
+            .findAll().stream().map(accountMapper::mapToAccountWithOutPassword)
+            .collect(Collectors.toList());
+        log.info("In getAccounts - {} accounts found",
+            accountAdminResponses.size());
+        return accountAdminResponses;
     }
 
+    @Override
     public List<RoleType> getListRolesByAccountEmail(String email) {
         Account account = this.getByEmail(email);
-        return account.getRoles()
-                .stream().map(Role::getRoleType).collect(Collectors.toList());
+        List<RoleType> roleTypes = account.getRoles().stream()
+            .map(Role::getRoleType).collect(Collectors.toList());
+        log.info("In getListRolesByAccountEmail - rolesType: {} found",
+            roleTypes);
+        return roleTypes;
     }
 
 }

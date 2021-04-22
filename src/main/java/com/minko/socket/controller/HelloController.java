@@ -12,7 +12,7 @@ import java.util.Map;
 public class HelloController {
 
     @GetMapping
-    public Map<String , Integer> hello() {
+    public Map<String, Integer> hello() {
         Map<String, Integer> map = new HashMap<>();
         map.put("First", 1);
         map.put("Second", 2);

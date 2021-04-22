@@ -25,7 +25,7 @@ public class OrderController {
 
     @PostMapping("/make")
     public ResponseEntity<Long> makeOrder(@RequestBody OrderRequestDto orderRequestDto) {
-        return new ResponseEntity<>(orderService.makeOrder(orderRequestDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(orderService.makeOrder(orderRequestDto).getId(), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

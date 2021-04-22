@@ -31,7 +31,7 @@ public class MailServiceImpl implements MailService {
             mimeMessageHelper.setText(build(notificationEmail.getBody()));
         };
         javaMailSender.send(mimeMessagePreparator);
-        log.info("Activated email send");
+        log.info("In sendMail - mail send");
     }
 
     private String build(String message) {

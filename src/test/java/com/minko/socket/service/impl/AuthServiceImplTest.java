@@ -79,18 +79,18 @@ class AuthServiceImplTest {
     @Test
     @Ignore
     void googleTest() throws IOException {
-//        SocialRequest socialRequest = new SocialRequest("fname", "lname", "token", "url");
-//        LoginResponse loginResponseExp = new LoginResponse("fname", "lname", "sabaka@sabaka.ua",
-//                "url", true, null, "token", "rtoken", Instant.now());
-//        String email = "sabaka@sabaka.ua";
-//
-//        builder.setAudience(anyCollection());
-//        when(googleIdToken.getPayload()).thenReturn(payload);
-//        when(payload.getEmail()).thenReturn(email);
-//
-//        LoginResponse loginResponseAct = authService.google(socialRequest);
-//        assertThat(loginResponseExp).isEqualTo(loginResponseAct);
-//        TODO, I don't know how to test it pls help me!
+////        SocialRequest socialRequest = new SocialRequest("fname", "lname", "token", "url");
+////        LoginResponse loginResponseExp = new LoginResponse("fname", "lname", "sabaka@sabaka.ua",
+////                "url", true, null, "token", "rtoken", Instant.now());
+////        String email = "sabaka@sabaka.ua";
+////
+////        builder.setAudience(anyCollection());
+////        when(googleIdToken.getPayload()).thenReturn(payload);
+////        when(payload.getEmail()).thenReturn(email);
+////
+////        LoginResponse loginResponseAct = authService.google(socialRequest);
+////        assertThat(loginResponseExp).isEqualTo(loginResponseAct);
+////        TODO, I don't know how to test it pls help me!
     }
 
     @Test
